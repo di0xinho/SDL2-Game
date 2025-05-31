@@ -150,7 +150,11 @@ void PlayState::Update(float dt)
     _camera.x = static_cast<int>(playerPos.x) - _camera.w / 2;
 
     for (auto& coin : _coins) {
-        if (!coin.isCollected() && SDL_HasIntersection(&_player.getRect(), &coin.getRect())) {
+
+        SDL_Rect playerRect = _player.getRect();
+        SDL_Rect coinRect = coin.getRect();
+
+        if (!coin.isCollected() && SDL_HasIntersection(&playerRect, &coinRect)) {
             coin.collect();
             _score++;
             hud.updateScore(_score);
@@ -160,10 +164,14 @@ void PlayState::Update(float dt)
     }
 
     for (auto& enemy : _enemies) {
+
+        SDL_Rect playerRect = _player.getRect();
+        SDL_Rect enemyRect = enemy.getRect();
+
         if (enemy.IsAlive()) {
             enemy.update(dt);
 
-            if (!_player.isBlinking() && SDL_HasIntersection(&_player.getRect(), &enemy.getRect())) {
+            if (!_player.isBlinking() && SDL_HasIntersection(&playerRect, &enemyRect)) {
                 _player.startBlink(1.0f); // 1 sekunda nieœmiertelnoœci
                 Mix_PlayChannel(-1, _data->assetManager->getSound("punch"), 0);
                 _lives--;
@@ -172,7 +180,7 @@ void PlayState::Update(float dt)
                 float knockbackStrength = 150.0f;
                 SDL_FPoint offset = { 0, -50.0f };
 
-                if (_player.getRect().x < enemy.getRect().x)
+                if (playerRect.x < enemyRect.x)
                     offset.x = -knockbackStrength;
                 else
                     offset.x = knockbackStrength;
@@ -210,7 +218,10 @@ void PlayState::Update(float dt)
 
     _trophy.update(dt);
 
-    if (SDL_HasIntersection(&_player.getRect(), &_trophy.getRect())) {
+    SDL_Rect playerRect = _player.getRect();
+    SDL_Rect trophyRect = _trophy.getRect();
+
+    if (SDL_HasIntersection(&playerRect, &trophyRect)) {
         Mix_HaltMusic();
         _data->machine.AddState(std::make_unique<GameOverState>(_data, true, _score), true);
     }
