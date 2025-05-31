@@ -1,7 +1,4 @@
 #include "PlayState.hpp"
-#include "GameConfig.hpp"
-#include "PauseState.hpp"
-#include "GameOverState.hpp"
 
 PlayState::PlayState(std::shared_ptr<GameData> data): _data(std::move(data)){}
 
@@ -57,6 +54,11 @@ void PlayState::Init()
     _player.setJumpSound(_data->assetManager->getSound("jump"));
     _player.setKnifeThrowSound(_data->assetManager->getSound("knife"));
     _player.setPosition({ 100.0f, groundY - _player.getSize().y}); // start nad ziemi¹
+
+    _player.bindCommand(SDL_SCANCODE_LEFT, std::make_unique<MoveLeftCommand>());
+    _player.bindCommand(SDL_SCANCODE_RIGHT, std::make_unique<MoveRightCommand>());
+    _player.bindCommand(SDL_SCANCODE_SPACE, std::make_unique<JumpCommand>());
+    _player.bindCommand(SDL_SCANCODE_RETURN, std::make_unique<AttackCommand>());
 
     _platforms = {
         { 200, 400, 100, 20 },
@@ -131,19 +133,7 @@ void PlayState::HandleInput()
         }
 
         if (_data->inputManager->isKeyPressed(SDL_SCANCODE_RETURN)) {
-            Weapon weapon;
-            SDL_FPoint playerPos = _player.getPosition();
-
-            // Start nieco wy¿ej ni¿ dolna krawêdŸ gracza
-            SDL_FPoint weaponStart = {
-                playerPos.x + 20.0f, // np. œrodek gracza
-                playerPos.y + 10.0f
-            };
-
-            weapon.init(_data, _weaponTexture, weaponStart);
-            _weapons.push_back(weapon);
-
-            _player.Attack(); // dŸwiêk ataku
+            _player.tryThrowWeapon(_data, _weaponTexture, _weapons);
         }
     }
 
@@ -258,24 +248,22 @@ void PlayState::Draw(float dt)
     }
 
     for (auto& coin : _coins) {
-        coin.render(_data->renderer, _camera);
+        coin.render(renderer, _camera);
     }
 
     for (auto& enemy : _enemies) {
         if (enemy.IsAlive()) {
-            enemy.render(_data->renderer, _camera);
+            enemy.render(renderer, _camera);
         }
     }
 
     for (auto& weapon : _weapons) {
-        weapon.render(_data->renderer, _camera);
+        weapon.render(renderer, _camera);
     }
 
-
-    // Gracz
     _player.render(renderer, _camera);
 
-    _trophy.render(_data->renderer, _camera);
+    _trophy.render(renderer, _camera);
 
     hud.render(WINDOW_WIDTH);
 

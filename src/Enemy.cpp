@@ -1,5 +1,4 @@
 #include "Enemy.hpp"
-#include <iostream>
 
 Enemy::Enemy() {}
 

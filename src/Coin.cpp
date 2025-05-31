@@ -1,5 +1,4 @@
 #include "Coin.hpp"
-#include <iostream>
 
 Coin::Coin() {}
 

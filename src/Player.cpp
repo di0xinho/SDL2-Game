@@ -1,8 +1,4 @@
 ﻿#include "Player.hpp"
-#include "GameData.hpp"
-#include "GameConfig.hpp"
-#include <iostream>
-#include <cmath>
 
 Player::Player() {
     position = { 100.0f, 300.0f };
@@ -35,25 +31,17 @@ SDL_FPoint Player::getPosition() const {
     return position;
 }
 
+void Player::bindCommand(SDL_Scancode key, std::unique_ptr<Command> command) {
+    commandMap[key] = std::move(command);
+}
+
 void Player::handleInput(const Uint8* keystates) {
     velocity.x = 0;
     isMoving = false;
 
-    if (keystates[SDL_SCANCODE_LEFT]) {
-        velocity.x = -speed;
-        isMoving = true;
-    }
-    if (keystates[SDL_SCANCODE_RIGHT]) {
-        velocity.x = speed;
-        isMoving = true;
-    }
-
-    if ((keystates[SDL_SCANCODE_SPACE]) && onGround) {
-        velocity.y = jumpStrength;
-        onGround = false;
-
-        if (jumpSound) {
-            Mix_PlayChannel(-1, jumpSound, 0);
+    for (const auto& [key, command] : commandMap) {
+        if (keystates[key]) {
+            command->Execute(*this);
         }
     }
 }
@@ -189,3 +177,39 @@ void Player::Attack() {
         Mix_PlayChannel(-1, knifeThrowSound, 0);
     }
 }
+
+void Player::Jump() {
+    if (onGround) {
+        velocity.y = jumpStrength;
+        onGround = false;
+
+        if (jumpSound) {
+            Mix_PlayChannel(-1, jumpSound, 0);
+        }
+    }
+}
+
+void Player::MoveLeft() {
+    velocity.x = -speed;
+    isMoving = true;
+}
+
+void Player::MoveRight() {
+    velocity.x = speed;
+    isMoving = true;
+}
+
+void Player::tryThrowWeapon(std::shared_ptr<GameData> data, SDL_Texture* weaponTexture, std::vector<Weapon>& weaponList)
+{
+    Weapon weapon;
+    SDL_FPoint playerPos = getPosition();
+
+    SDL_FPoint weaponStart = {
+        playerPos.x + 20.0f,
+        playerPos.y + 10.0f
+    };
+
+    weapon.init(data, weaponTexture, weaponStart);
+    weaponList.push_back(weapon);
+}
+

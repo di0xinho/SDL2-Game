@@ -5,6 +5,9 @@
 #include <memory>
 #include <vector>
 #include "State.hpp"
+#include "GameConfig.hpp"
+#include "PauseState.hpp"
+#include "GameOverState.hpp"
 #include "GameData.hpp"
 #include "Player.hpp"
 #include "Coin.hpp"
@@ -12,8 +15,10 @@
 #include "Enemy.hpp"
 #include "Weapon.hpp"
 #include "Trophy.hpp"
-
-
+#include "JumpCommand.hpp"
+#include "AttackCommand.hpp"
+#include "MoveLeftCommand.hpp"
+#include "MoveRightCommand.hpp"
 
 /// G³ówny stan rozgrywki
 class PlayState : public State {

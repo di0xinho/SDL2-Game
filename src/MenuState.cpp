@@ -1,6 +1,4 @@
 #include "MenuState.hpp"
-//#include "PlayState.hpp"
-#include "PauseState.hpp"
 
 MenuState::MenuState(std::shared_ptr<GameData> data): data(std::move(data)){}
 

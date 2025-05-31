@@ -1,9 +1,6 @@
 #include "PauseState.hpp"
 
-PauseState::PauseState(std::shared_ptr<GameData> data)
-    : data(std::move(data))
-{
-}
+PauseState::PauseState(std::shared_ptr<GameData> data): data(std::move(data)){}
 
 PauseState::~PauseState() {}
 
@@ -36,12 +33,11 @@ void PauseState::HandleInput() {
     }
 }
 
-void PauseState::Update(float /*deltaTime*/) {
+void PauseState::Update(float dt) {
     if (!initialized) Init();
-    // Brak logiki aktualizacji w pauzie
 }
 
-void PauseState::Draw(float /*deltaTime*/) {
+void PauseState::Draw(float dt) {
     if (!initialized) Init();
 
     SDL_Renderer* renderer = data->renderer;

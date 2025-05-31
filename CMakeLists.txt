@@ -42,7 +42,7 @@ FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_ttf SDL2_mixer)
 # Dodanie wsparcia dla OpenGL
 find_package(OpenGL REQUIRED)
 
-add_executable(main "src/main.cpp" "src/StateMachine.cpp" "src/MenuState.cpp" "src/AssetManager.cpp" "src/InputManager.cpp" "src/PauseState.cpp" "src/GameOverState.cpp" "src/PlayState.cpp" "src/Animation.cpp" "src/Player.cpp" "src/Coin.cpp" "src/HUD.cpp" "src/Enemy.cpp" "src/Weapon.cpp" "src/Trophy.cpp")
+add_executable(main "src/main.cpp" "src/StateMachine.cpp" "src/MenuState.cpp" "src/AssetManager.cpp" "src/InputManager.cpp" "src/PauseState.cpp" "src/GameOverState.cpp" "src/PlayState.cpp" "src/Animation.cpp" "src/Player.cpp" "src/Coin.cpp" "src/HUD.cpp" "src/Enemy.cpp" "src/Weapon.cpp" "src/Trophy.cpp"  "src/JumpCommand.cpp" "src/AttackCommand.cpp" "src/MoveLeftCommand.cpp" "src/MoveRightCommand.cpp")
 
 target_compile_features(main PRIVATE cxx_std_17)
 

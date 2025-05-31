@@ -1,5 +1,4 @@
 #include "AssetManager.hpp"
-#include <iostream>
 
 AssetManager::AssetManager(SDL_Renderer* renderer)
     : renderer(renderer) {
