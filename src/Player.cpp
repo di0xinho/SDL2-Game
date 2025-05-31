@@ -213,3 +213,14 @@ void Player::tryThrowWeapon(std::shared_ptr<GameData> data, SDL_Texture* weaponT
     weaponList.push_back(weapon);
 }
 
+void Player::constrainToBounds(float minX, float maxX) {
+    if (position.x < minX) {
+        position.x = minX;
+        velocity.x = 0;
+    }
+    if (position.x + size.x > maxX) {
+        position.x = maxX - size.x;
+        velocity.x = 0;
+    }
+}
+

@@ -30,7 +30,7 @@ public:
     void MoveRight();
 
     void tryThrowWeapon(std::shared_ptr<GameData> data, SDL_Texture* weaponTexture, std::vector<Weapon>& weaponList);
-
+    void constrainToBounds(float minX, float maxX);
 
     // Ustawia dŸwiêk skoku
     void setJumpSound(Mix_Chunk* sound);

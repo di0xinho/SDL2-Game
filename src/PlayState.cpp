@@ -144,6 +144,7 @@ void PlayState::HandleInput()
 void PlayState::Update(float dt)
 {
     _player.update(dt, _platforms, groundY);
+    _player.constrainToBounds(0.0f, 2650.0f);
 
     // Kamera pod¹¿a za graczem w poziomie
     SDL_FPoint playerPos = _player.getPosition();
@@ -188,6 +189,7 @@ void PlayState::Update(float dt)
                 _player.moveBy(offset);
 
                 if (_lives <= 0) {
+                    Mix_HaltMusic();
                     _data->machine.AddState(std::make_unique<GameOverState>(_data, false, _score), true);
                 }
             }

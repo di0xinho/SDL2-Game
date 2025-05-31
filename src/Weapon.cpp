@@ -49,7 +49,8 @@ bool Weapon::isAlive() const {
 }
 
 bool Weapon::checkCollision(const SDL_Rect& other) {
-    return SDL_HasIntersection(&getRect(), &other);
+    SDL_Rect rect = getRect();
+    return SDL_HasIntersection(&rect, &other);
 }
 
 void Weapon::Kill() {

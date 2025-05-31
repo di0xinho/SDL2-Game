@@ -11,7 +11,7 @@
 #define ROBOTO_FONT "../../../../Assets/Fonts/Roboto.ttf"
 
 // Muzyka w tle
-#define MENU_MUSIC "../../../../Assets/Music/menu-music.mp3"
+#define MENU_MUSIC "../../../../Assets/Music/menu-music.ogg"
 #define GAME_MUSIC "../../../../Assets/Music/game-music.ogg"
 
 // DŸwiêki i efekty dŸwiêkowe
