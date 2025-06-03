@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <vector>
@@ -32,15 +32,22 @@ public:
     void tryThrowWeapon(std::shared_ptr<GameData> data, SDL_Texture* weaponTexture, std::vector<Weapon>& weaponList);
     void constrainToBounds(float minX, float maxX);
 
-    // Ustawia d�wi�k skoku
+    // Ustawia dźwięk skoku
     void setJumpSound(Mix_Chunk* sound);
-    // Ustawia d�wi�k rzutu no�em
+    // Ustawia dźwięk rzutu nożem
     void setKnifeThrowSound(Mix_Chunk* sound);
+    // Zwraca dźwięku rzutu nożem
+    Mix_Chunk* getKnifeThrowSound();
 
     SDL_Rect getRect() const;
     SDL_FPoint getVelocity() const;
     SDL_FPoint getSize() const;
     bool isOnGround() const;
+
+    // Czy gracz może rzucić bronią (czy cooldown się skończy?)
+    bool canShoot() const;
+    // Resetuje cooldown rzutu bronią
+    void resetWeaponCooldown();
 
     void startBlink(float duration);
     bool isBlinking() const;
@@ -57,18 +64,21 @@ private:
     bool onGround = false;
     bool isMoving = false;
 
-    // Migotanie (nie�miertelno��)
+    // Migotanie (nieśmiertelność)
     bool blinking = false;
     float blinkTimer = 0.0f;
     float blinkDuration = 0.0f;
     float blinkFrequency = 12.0f;
+
+    float weaponCooldown = 0.0f;       // Czas do końca cooldownu rzutu bronią
+    const float weaponCooldownDuration = 0.5f; // Długość cooldownu rzutu bronią
 
     Animation idleAnim;
     Animation runAnim;
     Animation jumpAnim;
     Animation* currentAnim = nullptr;
 
-    // D�wi�ki skakania i rzucania no�em
+    // Dźwięki skakania i rzucania nożem
     Mix_Chunk* jumpSound = nullptr;
     Mix_Chunk* knifeThrowSound = nullptr;
 

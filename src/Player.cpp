@@ -67,6 +67,8 @@ void Player::update(float deltaTime, const std::vector<SDL_Rect>& platforms, flo
         }
     }
 
+    if (weaponCooldown > 0.0f) weaponCooldown -= deltaTime;
+
     // Fizyka
     position.x += velocity.x * deltaTime;
     velocity.y += gravity * deltaTime;
@@ -171,6 +173,21 @@ void Player::setKnifeThrowSound(Mix_Chunk* sound) {
     knifeThrowSound = sound;
 }
 
+// Zwraca wskaźnik do dźwięku rzucania nożem 
+Mix_Chunk* Player::getKnifeThrowSound() {
+    return knifeThrowSound;
+}
+
+// Zwraca, czy gracz może rzucić bronią (cooldown)
+bool Player::canShoot() const {
+    return weaponCooldown <= 0.0f;
+}
+
+// Resetuje cooldown rzutu bronią
+void Player::resetWeaponCooldown() {
+    weaponCooldown = weaponCooldownDuration;
+}
+
 // Atak (odtworzenie dźwięku rzutu nożem)
 void Player::Attack() {
     if (knifeThrowSound) {
@@ -211,6 +228,8 @@ void Player::tryThrowWeapon(std::shared_ptr<GameData> data, SDL_Texture* weaponT
 
     weapon.init(data, weaponTexture, weaponStart);
     weaponList.push_back(weapon);
+
+    resetWeaponCooldown();
 }
 
 void Player::constrainToBounds(float minX, float maxX) {

@@ -58,8 +58,8 @@ void PlayState::Init()
     _player.bindCommand(SDL_SCANCODE_LEFT, std::make_unique<MoveLeftCommand>());
     _player.bindCommand(SDL_SCANCODE_RIGHT, std::make_unique<MoveRightCommand>());
     _player.bindCommand(SDL_SCANCODE_SPACE, std::make_unique<JumpCommand>());
-    _player.bindCommand(SDL_SCANCODE_RETURN, std::make_unique<AttackCommand>());
-
+    _player.bindCommand(SDL_SCANCODE_RETURN, std::make_unique<AttackCommand>(_weaponTexture, _weapons));
+    
     _platforms = {
         { 200, 400, 100, 20 },
         { 400, 300, 100, 20 },
@@ -130,10 +130,6 @@ void PlayState::HandleInput()
         if (_data->inputManager->isKeyPressed(SDL_SCANCODE_ESCAPE)) {
             _data->machine.AddState(std::make_unique<PauseState>(_data), false);
             Mix_PauseMusic();
-        }
-
-        if (_data->inputManager->isKeyPressed(SDL_SCANCODE_RETURN)) {
-            _player.tryThrowWeapon(_data, _weaponTexture, _weapons);
         }
     }
 
