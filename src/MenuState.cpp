@@ -1,9 +1,13 @@
 #include "MenuState.hpp"
 
-MenuState::MenuState(std::shared_ptr<GameData> data): data(std::move(data)){}
+/// Konstruktor ó inicjalizuje stan menu g≥Ûwnego, zapisuje wskaünik do danych gry
+MenuState::MenuState(std::shared_ptr<GameData> data) : data(std::move(data)) {}
 
+/// Destruktor ó assetami zarzπdza assetManager, nie zwalniamy rÍcznie!
 MenuState::~MenuState() {}
 
+/// Inicjalizuje zasoby potrzebne do menu: t≥o, przycisk, czcionka, muzyka.
+/// Ustawia pozycjÍ przycisku "Graj" wyúrodkowanπ na ekranie.
 void MenuState::Init() {
     if (initialized) return;
 
@@ -18,7 +22,7 @@ void MenuState::Init() {
     font = data->assetManager->getFont("robotoFont");
     menuMusic = data->assetManager->getMusic("menuMusic");
 
-    // Odtwarzanie muzyki w tle (jeúli nie gra)
+    // Odtwarzanie muzyki w tle 
     if (!Mix_PlayingMusic())
         Mix_PlayMusic(menuMusic, -1);
 
@@ -34,6 +38,9 @@ void MenuState::Init() {
     initialized = true;
 }
 
+/// Obs≥uguje wejúcie uøytkownika w menu:
+/// - zamkniÍcie okna,
+/// - klikniÍcie przycisku "Graj" (start gry).
 void MenuState::HandleInput() {
     if (!initialized) Init();
 
@@ -42,8 +49,8 @@ void MenuState::HandleInput() {
 
         if (event.type == SDL_QUIT)
             exit(0);
-        
-        // Obs≥uga klikniÍcia w przycisk
+
+        // Obs≥uga klikniÍcia na przycisk
         if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
             int x = event.button.x;
             int y = event.button.y;
@@ -51,18 +58,20 @@ void MenuState::HandleInput() {
             if (x >= playButtonRect.x && x <= playButtonRect.x + playButtonRect.w &&
                 y >= playButtonRect.y && y <= playButtonRect.y + playButtonRect.h) {
                 Mix_HaltMusic();
-                data->machine.AddState(std::make_unique<PlayState>(data), true); 
+                data->machine.AddState(std::make_unique<PlayState>(data), true);
             }
         }
     }
 }
 
-void MenuState::Update(float /*deltaTime*/) {
+/// Aktualizuje logikÍ menu 
+void MenuState::Update(float deltaTime) {
     if (!initialized) Init();
     // Brak logiki czasowej w menu
 }
 
-void MenuState::Draw(float /*deltaTime*/) {
+/// Renderuje ekran menu: t≥o, przycisk, instrukcjÍ do uruchomienia gry
+void MenuState::Draw(float deltaTime) {
     if (!initialized) Init();
 
     SDL_Renderer* renderer = data->renderer;
@@ -75,7 +84,7 @@ void MenuState::Draw(float /*deltaTime*/) {
     // Przycisk
     SDL_RenderCopy(renderer, playButtonTexture, nullptr, &playButtonRect);
 
-    // Napis
+    // Napis informacyjny
     SDL_Color color = { 50, 50, 50 };
     const char* infoText = "Nacisnij guzik, aby wystartowac gre";
     SDL_Surface* textSurface = TTF_RenderUTF8_Blended(font, infoText, color);

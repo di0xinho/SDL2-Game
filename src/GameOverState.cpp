@@ -1,20 +1,22 @@
 #include "GameOverState.hpp"
 
+/// Konstruktor — przekazuje dane gry, informacjê o wygranej/przegranej oraz wynik koñcowy
 GameOverState::GameOverState(std::shared_ptr<GameData> data, bool win, int finalScore)
     : data(std::move(data)), win(win), score(finalScore)
 {
 }
 
-GameOverState::~GameOverState() {
-    // Assetami zarz¹dza assetManager, nie zwalniamy rêcznie!
-}
+/// Destruktor — nie zwalnia zasobów rêcznie, assetami zarz¹dza assetManager
+GameOverState::~GameOverState() {}
 
+/// Inicjalizuje stan koñca gry (³aduje zasoby, dŸwiêk, czcionkê, t³o)
 void GameOverState::Init() {
     if (initialized) return;
     loadAssets();
     initialized = true;
 }
 
+/// £aduje zasoby potrzebne do wyœwietlenia ekranu koñca gry (czcionka, t³o, dŸwiêk)
 void GameOverState::loadAssets() {
     // Czcionka
     data->assetManager->loadFont("robotoFontGameOver", ROBOTO_FONT, 48);
@@ -27,17 +29,19 @@ void GameOverState::loadAssets() {
     data->assetManager->loadTexture("gameover_bg", GAMEOVER_IMAGE);
     backgroundTexture = data->assetManager->getTexture("gameover_bg");
 
-    // DŸwiêk
+    // DŸwiêk — zale¿ny od wygranej/przegranej
     std::string soundKey = win ? "level_passed" : "level_failed";
     std::string soundPath = win ? LEVEL_PASSED_SOUND : LEVEL_FAILED_SOUND;
     data->assetManager->loadSound(soundKey, soundPath);
     gameOverSound = data->assetManager->getSound(soundKey);
 
+    // Puszczamy dŸwiêk koñca gry
     if (gameOverSound) {
         Mix_PlayChannel(-1, gameOverSound, 0);
     }
 }
 
+/// Obs³uguje wejœcie u¿ytkownika (wyjœcie z gry lub restart po naciœniêciu R)
 void GameOverState::HandleInput() {
     if (!initialized) Init();
 
@@ -56,18 +60,21 @@ void GameOverState::HandleInput() {
     }
 }
 
-void GameOverState::Update(float /*deltaTime*/) {
+/// Aktualizuje stan koñca gry (brak logiki do aktualizacji)
+void GameOverState::Update(float deltaTime) {
     if (!initialized) Init();
     // Brak logiki aktualizacji
 }
 
-void GameOverState::Draw(float /*deltaTime*/) {
+/// Renderuje ekran koñca gry: t³o, komunikaty o wyniku, informacjê o restarcie
+void GameOverState::Draw(float deltaTime) {
     if (!initialized) Init();
 
     SDL_Renderer* renderer = data->renderer;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    // Rysowanie t³a
     if (backgroundTexture) {
         int texW = 0, texH = 0;
         SDL_QueryTexture(backgroundTexture, nullptr, nullptr, &texW, &texH);
@@ -75,6 +82,7 @@ void GameOverState::Draw(float /*deltaTime*/) {
         SDL_RenderCopy(renderer, backgroundTexture, nullptr, &dst);
     }
 
+    // Przygotowanie tekstów
     std::string message = win ? "WYGRALES!" : "PRZEGRALES!";
     std::string scoreText = "Wynik: " + std::to_string(score);
     std::string restartText = "Nacisnij klawisz R, aby zrestartowac gre";
@@ -83,6 +91,7 @@ void GameOverState::Draw(float /*deltaTime*/) {
     SDL_Color white = { 255, 255, 255 };
     SDL_Color yellow = { 255, 255, 0 };
 
+    // Generowanie powierzchni tekstowych
     SDL_Surface* msgSurf = TTF_RenderUTF8_Blended(font, message.c_str(), colorMessage);
     SDL_Surface* scoreSurf = TTF_RenderUTF8_Blended(font, scoreText.c_str(), white);
     SDL_Surface* restartSurf = TTF_RenderUTF8_Blended(font, restartText.c_str(), yellow);
@@ -99,10 +108,12 @@ void GameOverState::Draw(float /*deltaTime*/) {
     SDL_Rect scoreRect = { WINDOW_WIDTH / 2 - scoreSurf->w / 2, scoreY, scoreSurf->w, scoreSurf->h };
     SDL_Rect restartRect = { WINDOW_WIDTH / 2 - restartSurf->w / 2, restartY, restartSurf->w, restartSurf->h };
 
+    // Render tekstów
     SDL_RenderCopy(renderer, msgTex, nullptr, &msgRect);
     SDL_RenderCopy(renderer, scoreTex, nullptr, &scoreRect);
     SDL_RenderCopy(renderer, restartTex, nullptr, &restartRect);
 
+    // Sprz¹tanie powierzchni i tekstur
     SDL_FreeSurface(msgSurf);
     SDL_FreeSurface(scoreSurf);
     SDL_FreeSurface(restartSurf);

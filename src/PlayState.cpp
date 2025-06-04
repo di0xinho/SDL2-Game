@@ -1,7 +1,9 @@
 #include "PlayState.hpp"
 
-PlayState::PlayState(std::shared_ptr<GameData> data): _data(std::move(data)){}
+/// Konstruktor — przekazuje wskaŸnik do danych gry
+PlayState::PlayState(std::shared_ptr<GameData> data) : _data(std::move(data)) {}
 
+/// Inicjalizuje wszystkie zasoby, obiekty i parametry potrzebne do rozgrywki
 void PlayState::Init()
 {
     // T³o
@@ -9,10 +11,12 @@ void PlayState::Init()
         _data->assetManager->loadTexture("background", BACKGROUND_TEXTURE);
     _backgroundTexture = _data->assetManager->getTexture("background");
 
+    // Powierzchnia
     if (!_data->assetManager->hasTexture("land"))
         _data->assetManager->loadTexture("land", LAND_TEXTURE);
     _landTexture = _data->assetManager->getTexture("land");
 
+    // Trofeum
     if (!_data->assetManager->hasTexture("trophy"))
         _data->assetManager->loadTexture("trophy", TROPHY);
 
@@ -20,8 +24,10 @@ void PlayState::Init()
     if (!_data->assetManager->hasMusic("game_music"))
         _data->assetManager->loadMusic("game_music", GAME_MUSIC);
 
+    // Pobranie muzyki rozgrywki z mened¿era assetów
     gameMusic = _data->assetManager->getMusic("game_music");
 
+    // £adowanie dŸwiêków
     if (!_data->assetManager->hasSound("coin"))
         _data->assetManager->loadSound("coin", COIN_SOUND);
     if (!_data->assetManager->hasSound("jump"))
@@ -35,31 +41,32 @@ void PlayState::Init()
         _data->assetManager->loadFont("roboto", ROBOTO_FONT, 24);
 
     if (!_data->assetManager->hasSound("enemy_hit"))
-        _data->assetManager->loadSound("enemy_hit", OUCH_SOUND); 
+        _data->assetManager->loadSound("enemy_hit", OUCH_SOUND);
 
     if (!_data->assetManager->hasTexture("knife"))
-        _data->assetManager->loadTexture("knife", SWORD_TEXTURE); 
+        _data->assetManager->loadTexture("knife", SWORD_TEXTURE);
 
     _weaponTexture = _data->assetManager->getTexture("knife");
-
     robotoFont = _data->assetManager->getFont("roboto");
     hud = HUD(_data->renderer, robotoFont);
 
     // Odtwarzanie muzyki w tle (jeœli nie gra)
     if (!Mix_PlayingMusic())
         Mix_PlayMusic(gameMusic, -1);
-    
+
     // Inicjalizacja gracza
-    _player.init(_data); // adapter wymagany: wrapper nad GameData lub refaktoring
+    _player.init(_data);
     _player.setJumpSound(_data->assetManager->getSound("jump"));
     _player.setKnifeThrowSound(_data->assetManager->getSound("knife"));
-    _player.setPosition({ 100.0f, groundY - _player.getSize().y}); // start nad ziemi¹
+    _player.setPosition({ 100.0f, groundY - _player.getSize().y }); // start nad ziemi¹
 
+    // Bindowanie klawiszy pod sterowanie graczem (mapowanie klawiszy na polecenia)
     _player.bindCommand(SDL_SCANCODE_LEFT, std::make_unique<MoveLeftCommand>());
     _player.bindCommand(SDL_SCANCODE_RIGHT, std::make_unique<MoveRightCommand>());
     _player.bindCommand(SDL_SCANCODE_SPACE, std::make_unique<JumpCommand>());
     _player.bindCommand(SDL_SCANCODE_RETURN, std::make_unique<AttackCommand>(_weaponTexture, _weapons));
-    
+
+    // Definiowanie po³o¿enia i wielkoœci platform
     _platforms = {
         { 200, 400, 100, 20 },
         { 400, 300, 100, 20 },
@@ -80,9 +87,9 @@ void PlayState::Init()
     };
 
     std::vector<std::pair<float, float>> coinPositions = {
-    {250.0f, 370.0f}, {450.0f, 270.0f}, {660.0f, 170.0f},
-    {875.0f, 120.0f}, {1075.0f, 220.0f}, {1325.0f, 170.0f},
-    {1475.0f, 70.0f}, {1825.0f, 70.0f}, {2225.0f, 170.0f}
+        {250.0f, 370.0f}, {450.0f, 270.0f}, {660.0f, 170.0f},
+        {875.0f, 120.0f}, {1075.0f, 220.0f}, {1325.0f, 170.0f},
+        {1475.0f, 70.0f}, {1825.0f, 70.0f}, {2225.0f, 170.0f}
     };
 
     _coins.reserve(coinPositions.size());
@@ -94,7 +101,7 @@ void PlayState::Init()
     }
 
     std::vector<const char*> enemyFrames = {
-    ENEMY_1, ENEMY_2 // np. dwie klatki animacji
+        ENEMY_1, ENEMY_2
     };
 
     std::vector<float> enemyXPositions = { 500.0f, 800.0f, 1000.0f, 1250.0f, 1500.0f };
@@ -111,12 +118,13 @@ void PlayState::Init()
     }
 
     _trophy.init(_data);
-    _trophy.setPosition(2600, static_cast<float>(groundY - _trophy.getSize().y - 20)); // dostosuj do poziomu
+    _trophy.setPosition(2600, static_cast<float>(groundY - _trophy.getSize().y - 20));
 
     // Kamera
     _camera = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
 }
 
+/// Obs³uguje wejœcie u¿ytkownika podczas rozgrywki (ruch, pauza, wyjœcie z gry)
 void PlayState::HandleInput()
 {
     SDL_Event event;
@@ -137,6 +145,7 @@ void PlayState::HandleInput()
     _player.handleInput(keystates);
 }
 
+/// Aktualizuje ca³¹ logikê gry: gracza, platformy, monety, wrogów, broñ, kamerê, HUD
 void PlayState::Update(float dt)
 {
     _player.update(dt, _platforms, groundY);
@@ -146,6 +155,7 @@ void PlayState::Update(float dt)
     SDL_FPoint playerPos = _player.getPosition();
     _camera.x = static_cast<int>(playerPos.x) - _camera.w / 2;
 
+    // Kolizja gracza z monetami
     for (auto& coin : _coins) {
 
         SDL_Rect playerRect = _player.getRect();
@@ -160,6 +170,7 @@ void PlayState::Update(float dt)
         coin.update(dt);
     }
 
+    // Kolizja gracza z wrogami
     for (auto& enemy : _enemies) {
 
         SDL_Rect playerRect = _player.getRect();
@@ -184,6 +195,7 @@ void PlayState::Update(float dt)
 
                 _player.moveBy(offset);
 
+                // Logika przegranej (jeœli mamy 0 ¿yæ = przegrywamy)
                 if (_lives <= 0) {
                     Mix_HaltMusic();
                     _data->machine.AddState(std::make_unique<GameOverState>(_data, false, _score), true);
@@ -192,6 +204,7 @@ void PlayState::Update(float dt)
         }
     }
 
+    // Aktualizacja broni i sprawdzanie kolizji z wrogami
     for (auto& weapon : _weapons) {
         weapon.update(dt);
         for (auto& enemy : _enemies) {
@@ -202,6 +215,7 @@ void PlayState::Update(float dt)
         }
     }
 
+    // Usuwanie broni, która przesta³a byæ aktywna
     _weapons.erase(
         std::remove_if(_weapons.begin(), _weapons.end(),
             [](const Weapon& w) { return !w.isAlive(); }),
@@ -219,6 +233,7 @@ void PlayState::Update(float dt)
     SDL_Rect playerRect = _player.getRect();
     SDL_Rect trophyRect = _trophy.getRect();
 
+    // Wygrana — dotkniêcie trofeum
     if (SDL_HasIntersection(&playerRect, &trophyRect)) {
         Mix_HaltMusic();
         _data->machine.AddState(std::make_unique<GameOverState>(_data, true, _score), true);
@@ -228,6 +243,7 @@ void PlayState::Update(float dt)
     if (_camera.x < 0) _camera.x = 0;
 }
 
+/// Renderuje ca³¹ scenê gry: t³o, ziemiê, platformy, monety, wrogów, broñ, gracza, trofeum i HUD
 void PlayState::Draw(float dt)
 {
     SDL_Renderer* renderer = _data->renderer;
@@ -237,11 +253,12 @@ void PlayState::Draw(float dt)
     if (_backgroundTexture)
         SDL_RenderCopy(renderer, _backgroundTexture, nullptr, nullptr);
 
+    // Ziemia (land)
     if (_landTexture) {
         SDL_Rect groundRect = {
             0 - _camera.x,
             static_cast<int>(groundY) - _camera.y,
-            WINDOW_WIDTH * 3, 
+            WINDOW_WIDTH * 3,
             WINDOW_HEIGHT - static_cast<int>(groundY)
         };
         SDL_RenderCopy(renderer, _landTexture, nullptr, &groundRect);
@@ -256,25 +273,32 @@ void PlayState::Draw(float dt)
         SDL_RenderFillRect(renderer, &drawRect);
     }
 
+    // Monety
     for (auto& coin : _coins) {
         coin.render(renderer, _camera);
     }
 
+    // Przeciwnicy
     for (auto& enemy : _enemies) {
         if (enemy.IsAlive()) {
             enemy.render(renderer, _camera);
         }
     }
 
+    // Bronie
     for (auto& weapon : _weapons) {
         weapon.render(renderer, _camera);
     }
 
+    // Gracz
     _player.render(renderer, _camera);
 
+    // Trofeum
     _trophy.render(renderer, _camera);
 
+    // HUD
     hud.render(WINDOW_WIDTH);
 
+    // Na koniec prezentujemy przygotowan¹ w rendererze zawartoœæ
     SDL_RenderPresent(renderer);
 }

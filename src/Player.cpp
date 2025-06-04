@@ -1,5 +1,6 @@
 ﻿#include "Player.hpp"
 
+/// Konstruktor gracza — ustawia pozycję startową, zeruje prędkość, wyłącza mruganie i ustawia domyślne parametry mrugania.
 Player::Player() {
     position = { 100.0f, 300.0f };
     velocity = { 0.0f, 0.0f };
@@ -9,6 +10,7 @@ Player::Player() {
     blinkFrequency = 12.0f;
 }
 
+/// Inicjalizuje animacje gracza (idle, bieg, skok), ładuje tekstury przez assetManager
 void Player::init(std::shared_ptr<GameData> data) {
     idleAnim.addFrame(data->assetManager->loadTexture("idle", PLAYER_IDLE));
     runAnim.addFrame(data->assetManager->loadTexture("run1", PLAYER_RUN_1));
@@ -23,18 +25,22 @@ void Player::init(std::shared_ptr<GameData> data) {
     currentAnim = &idleAnim;
 }
 
+/// Ustawia pozycję gracza
 void Player::setPosition(const SDL_FPoint& pos) {
     position = pos;
 }
 
+/// Zwraca aktualną pozycję gracza
 SDL_FPoint Player::getPosition() const {
     return position;
 }
 
+/// Przypisuje komendę (wzorzec Command) do klawisza
 void Player::bindCommand(SDL_Scancode key, std::unique_ptr<Command> command) {
     commandMap[key] = std::move(command);
 }
 
+/// Obsługa wejścia — wykonuje powiązane komendy zgodnie ze stanem klawiatury
 void Player::handleInput(const Uint8* keystates) {
     velocity.x = 0;
     isMoving = false;
@@ -46,8 +52,9 @@ void Player::handleInput(const Uint8* keystates) {
     }
 }
 
+/// Aktualizuje gracza: animacja, mruganie, fizyka ruchu, kolizje z ziemią i platformami
 void Player::update(float deltaTime, const std::vector<SDL_Rect>& platforms, float groundY) {
-    // Animacja
+    // Wybór animacji
     if (!onGround) {
         currentAnim = &jumpAnim;
     }
@@ -59,6 +66,7 @@ void Player::update(float deltaTime, const std::vector<SDL_Rect>& platforms, flo
     }
     currentAnim->update(deltaTime);
 
+    // Mruganie (np. po otrzymaniu obrażeń)
     if (blinking) {
         blinkTimer += deltaTime;
         if (blinkTimer >= blinkDuration) {
@@ -69,20 +77,20 @@ void Player::update(float deltaTime, const std::vector<SDL_Rect>& platforms, flo
 
     if (weaponCooldown > 0.0f) weaponCooldown -= deltaTime;
 
-    // Fizyka
+    // Fizyka ruchu: pozycja x/y, grawitacja
     position.x += velocity.x * deltaTime;
     velocity.y += gravity * deltaTime;
     float newY = position.y + velocity.y * deltaTime;
     onGround = false;
 
-    // Detekcja pod³o¿a
+    // Detekcja podłoża (grunt)
     if (position.y + size.y <= groundY && newY + size.y >= groundY) {
         newY = groundY - size.y;
         velocity.y = 0;
         onGround = true;
     }
 
-    // Detekcja kolizji z platformami (z tolerancj¹)
+    // Detekcja kolizji z platformami (góra platformy, tolerancja)
     const float buffer = 3.0f;
     for (const auto& plat : platforms) {
         float platLeft = plat.x;
@@ -102,6 +110,7 @@ void Player::update(float deltaTime, const std::vector<SDL_Rect>& platforms, flo
     position.y = newY;
 }
 
+/// Renderuje gracza z uwzględnieniem kamery i efektu mrugania (przezroczystość)
 void Player::render(SDL_Renderer* renderer, const SDL_Rect& camera) {
     SDL_Texture* texture = currentAnim->getCurrentFrame();
     SDL_Rect dstRect = {
@@ -127,6 +136,7 @@ void Player::render(SDL_Renderer* renderer, const SDL_Rect& camera) {
     SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
 }
 
+/// Zwraca prostokąt kolizyjny gracza
 SDL_Rect Player::getRect() const {
     return {
         static_cast<int>(position.x),
@@ -136,29 +146,35 @@ SDL_Rect Player::getRect() const {
     };
 }
 
+/// Zwraca aktualną prędkość gracza
 SDL_FPoint Player::getVelocity() const {
     return velocity;
 }
 
+/// Zwraca rozmiar gracza
 SDL_FPoint Player::getSize() const {
     return size;
 }
 
+/// Zwraca, czy gracz stoi na ziemi/platformie
 bool Player::isOnGround() const {
     return onGround;
 }
 
+/// Przesuwa gracza o zadany wektor
 void Player::moveBy(SDL_FPoint offset) {
     position.x += offset.x;
     position.y += offset.y;
 }
 
+/// Uruchamia mruganie gracza na określony czas (np. po obrażeniach)
 void Player::startBlink(float duration) {
     blinking = true;
     blinkDuration = duration;
     blinkTimer = 0.0f;
 }
 
+/// Zwraca, czy gracz aktualnie mruga
 bool Player::isBlinking() const {
     return blinking;
 }
@@ -168,7 +184,7 @@ void Player::setJumpSound(Mix_Chunk* sound) {
     jumpSound = sound;
 }
 
-// Ustawia dźwięku rzutu nożem gracza
+// Ustawia dźwięk rzutu nożem gracza
 void Player::setKnifeThrowSound(Mix_Chunk* sound) {
     knifeThrowSound = sound;
 }
@@ -188,13 +204,7 @@ void Player::resetWeaponCooldown() {
     weaponCooldown = weaponCooldownDuration;
 }
 
-// Atak (odtworzenie dźwięku rzutu nożem)
-void Player::Attack() {
-    if (knifeThrowSound) {
-        Mix_PlayChannel(-1, knifeThrowSound, 0);
-    }
-}
-
+/// Skok gracza (jeśli stoi na ziemi/platformie, odtwarza dźwięk)
 void Player::Jump() {
     if (onGround) {
         velocity.y = jumpStrength;
@@ -206,16 +216,19 @@ void Player::Jump() {
     }
 }
 
+/// Ruch w lewo
 void Player::MoveLeft() {
     velocity.x = -speed;
     isMoving = true;
 }
 
+/// Ruch w prawo
 void Player::MoveRight() {
     velocity.x = speed;
     isMoving = true;
 }
 
+/// Próba rzutu bronią (tworzy instancję broni i dodaje ją do listy broni)
 void Player::tryThrowWeapon(std::shared_ptr<GameData> data, SDL_Texture* weaponTexture, std::vector<Weapon>& weaponList)
 {
     Weapon weapon;
@@ -232,6 +245,7 @@ void Player::tryThrowWeapon(std::shared_ptr<GameData> data, SDL_Texture* weaponT
     resetWeaponCooldown();
 }
 
+/// Ogranicza ruch gracza do podanych granic (np. nie wypada poza mapę)
 void Player::constrainToBounds(float minX, float maxX) {
     if (position.x < minX) {
         position.x = minX;
@@ -242,4 +256,3 @@ void Player::constrainToBounds(float minX, float maxX) {
         velocity.x = 0;
     }
 }
-

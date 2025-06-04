@@ -1,21 +1,25 @@
 #include "HUD.hpp"
 
+/// Konstruktor HUD-u — zapamiêtuje renderer i czcionkê do wyœwietlania informacji
 HUD::HUD(SDL_Renderer* renderer, TTF_Font* font)
     : renderer(renderer), font(font) {
 }
 
+/// Aktualizuje wyœwietlany wynik gracza
 void HUD::updateScore(int score) {
     currentScore = score;
 }
 
+/// Aktualizuje wyœwietlan¹ liczbê ¿yæ gracza
 void HUD::updateLives(int lives) {
     currentLives = lives;
 }
 
+/// Renderuje HUD na ekranie (wynik i zdrowie gracza) w prawym górnym rogu
 void HUD::render(int screenWidth) {
     SDL_Color white = { 255, 255, 255 };
 
-    // Lives
+    // Lives (zdrowie)
     std::string livesText = "Zdrowie: " + std::to_string(currentLives);
     SDL_Surface* livesSurface = TTF_RenderText_Blended(font, livesText.c_str(), white);
     SDL_Texture* livesTexture = SDL_CreateTextureFromSurface(renderer, livesSurface);
@@ -29,7 +33,7 @@ void HUD::render(int screenWidth) {
     SDL_FreeSurface(livesSurface);
     SDL_DestroyTexture(livesTexture);
 
-    // Score
+    // Score (wynik)
     std::string scoreText = "Wynik: " + std::to_string(currentScore);
     SDL_Surface* scoreSurface = TTF_RenderText_Blended(font, scoreText.c_str(), white);
     SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);

@@ -10,7 +10,7 @@
 struct GameData
 {
     StateMachine machine;                              /// Maszyna stanów gry
-    SDL_Renderer* renderer;
+    SDL_Renderer* renderer;                            /// Renderer SDL'a
     std::shared_ptr<InputManager> inputManager;        /// Manager wejœcia
     std::shared_ptr<AssetManager> assetManager;        /// Manager zasobów (tekstury, czcionki)
 };
